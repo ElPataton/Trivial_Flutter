@@ -1,14 +1,15 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'loading.dart';
-import 'dart:convert';
+import 'pregunta.dart';
 import 'resultat.dart';
 
 class TrivialScreen extends StatefulWidget {
   final List<Pregunta> preguntes;
 
-  const TrivialScreen({super.key, required this.preguntes});
+  const TrivialScreen({
+    super.key, 
+    required this.preguntes
+  });
+
   @override
   State<TrivialScreen> createState() => _TrivialScreenState();
 }
@@ -20,6 +21,7 @@ class _TrivialScreenState extends State<TrivialScreen> {
   int? respostaSelIndex;
   int? respostaCorrectaIndex;
   bool seguent = false;
+
   final Map<String, Color> _colorsCategoria = {
   'entreteniment': Colors.orange,
   'història': Colors.brown,
@@ -33,9 +35,6 @@ class _TrivialScreenState extends State<TrivialScreen> {
 
   Color _colorCategoria(String categoria){
     final base = categoria.split(':').first.trim().toLowerCase();
-  print('DEBUG - Categoría original: "$categoria"');
-  print('DEBUG - Base calculada: "$base"');
-  print('DEBUG - Color encontrado: ${_colorsCategoria[base]}');
     return _colorsCategoria[base] ?? Colors.grey;
   }
 
@@ -47,12 +46,9 @@ class _TrivialScreenState extends State<TrivialScreen> {
     _carregarpregunta();
   }
 
-
   void _carregarpregunta() {
     final pregunta = widget.preguntes[preguntaIndex];
-    respostesActuals = [pregunta.respostaCorrecta]
-      ..addAll(pregunta.respostesIncorrectes)
-      ..shuffle();
+    respostesActuals = [pregunta.respostaCorrecta, ...pregunta.respostesIncorrectes] ..shuffle();
   }
 
   void _selresposta(int index) {
@@ -90,52 +86,41 @@ class _TrivialScreenState extends State<TrivialScreen> {
             Expanded(
               flex: 2,
               child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  
-                  color: _colorCategoria(pregunta.categoria),
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.black),
-                ),
+                color: _colorCategoria(pregunta.categoria),
                 child: Center(
                   child: Text(
                     pregunta.pregunta,
-                    style: const TextStyle(fontSize: 20, height: 2),
-                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 20),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            SizedBox(
+              height: 30
+            ),
             Expanded(
               flex: 3,
               child: ListView.builder(
                 itemCount: respostesActuals.length,
                 itemBuilder: (context, index) {
-                  final color = respostaSel
-                      ? (index == respostaCorrectaIndex
-                            ? Colors.green
-                            : index == respostaSelIndex
-                            ? Colors.red
-                            : null)
-                      : null;
+                  final color = respostaSel? (
+                    index == respostaCorrectaIndex? Colors.green : 
+                    index == respostaSelIndex? Colors.red : 
+                    null
+                  ) : null;
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: ElevatedButton(
-                      onPressed: respostaSel
-                          ? () {}
-                          : () => _selresposta(index),
+                      onPressed: respostaSel? () {
+                      } : () => _selresposta(index),
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: color ?? Colors.white,
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.all(20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          side: BorderSide(color: Colors.grey),
-                        ),
                       ),
+
                       child: Text(
                         respostesActuals[index],
                         style: const TextStyle(fontSize: 16),
@@ -149,32 +134,30 @@ class _TrivialScreenState extends State<TrivialScreen> {
           ],
         ),
       ),
-      floatingActionButton: seguent
-          ? FloatingActionButton(
-              onPressed: () {
-                if (seguent) {
-                  if (preguntaIndex < widget.preguntes.length - 1) {
-                    setState(() {
-                      preguntaIndex++;
-                      respostaSel = false;
-                      respostaSelIndex = null;
-                      respostaCorrectaIndex = null;
-                      seguent = false;
-                    });
-                    _carregarpregunta();
-                  } else {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ResultatScreen(puntuacio: puntuacio),
-                      ),
-                    );
-                  }
-                }
-              },
-              child: const Icon(Icons.arrow_forward),
-            )
-          : null,
+      floatingActionButton: seguent? FloatingActionButton(
+        onPressed: () {
+          if (seguent) {
+            if (preguntaIndex < widget.preguntes.length - 1) {
+              setState(() {
+                preguntaIndex++;
+                respostaSel = false;
+                respostaSelIndex = null;
+                respostaCorrectaIndex = null;
+                seguent = false;
+              });
+              _carregarpregunta();
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ResultatScreen(puntuacio: puntuacio),
+                ),
+              );
+            }
+          }
+        },
+        child: const Icon(Icons.arrow_forward),
+      ) : null,
     );
   }
 }
